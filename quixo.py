@@ -49,6 +49,7 @@ def apply_move(board, turn, index, push_from):
 def check_victory(board, who_played):
     dimension = int(math.sqrt(len(board)))
     display_board(board)
+    winner = [False for i in range(3)]
     # check row
     for i in range(dimension):
         same = 0
@@ -56,7 +57,7 @@ def check_victory(board, who_played):
             if board[i * dimension + j] == board[i * dimension + j + 1]:
                 same = same + 1
                 if same == dimension - 1:
-                    return board[i * dimension]
+                    winner[board[i * dimension]] = True
     # check column
     for k in range(dimension):
         same = 0
@@ -64,21 +65,32 @@ def check_victory(board, who_played):
             if board[k + l * dimension] == board[k + (l - 1) * dimension]:
                 same = same + 1
                 if same == dimension - 1:
-                    return board[k]
+                    winner[board[k]] = True
     # check diagonals
     same = 0
     for m in range(dimension - 1):
         if board[m * (dimension + 1)] == board[(m + 1) * (dimension + 1)]:
             same = same + 1
             if same == dimension - 1:
-                return board[0]
+                winner[board[0]] = True
     same = 0
     for n in range(dimension - 1):
         if board[m * (dimension - 1)] == board[(m + 1) * (dimension + 1)]:
             same = same + 1
             if same == dimension - 1:
-                return board[dimension - 1]
+                winner[board[dimension - 1]] = True
+    # corner case - 2 winners
+    if winner[1] == True and winner[2] == True:
+        if who_played == 1:
+            return 2
+        elif who_played == 2:
+            return 1
+    if winner[1] == True:
+        return 1
+    if winner[2] == True:
+        return 2
     return 0
+
 
 def computer_move(board, turn, level):
     if level == 1:
