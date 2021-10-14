@@ -1,41 +1,11 @@
 import random
 import math
 
-def main():
-    #prompt for the dimension form the user
-    #IMPROVE LATER ON > check the data type, make sure it's integer, add limit
-    n = int(input("Choose dimention: "))
-    board = [i for i in range(int(n*n))]
-
-    display_board(board)
-    x = check_move(board, 0, 2, 'L')
-    print(x)
-
-"""     board = [0 for i in range(n*n)]
-    print(board)
-    display_board(board)
-    returnval = check_move(board, 1, 1, 'T')
-    print(returnval)
-    turn = 0
-    while(True):
-        turn = turn + 1
-        #input from the user
-        input_index = input("Enter index: ")
-        push_from = input("Enter push direction: ")
-        
-        if check_move(board, turn, input_index, push_from) == True:
-            break """
-
-
-    #display_board(board)
-
-
-
 def check_move(board, turn, index, push_from):
     dimension = int(math.sqrt(len(board)))
     if (turn == 1 and board[index] == 2) or (turn == 2 and board[index] == 1):
         return False
-    if (index % dimension == 0 and push_from == 'R') or (index % dimension == dimension - 1 and push_from == 'R'):
+    if (index % dimension == 0 and push_from == 'L') or (index % dimension == dimension - 1 and push_from == 'R'):
         return False
     if (index < dimension and push_from == 'T') or (index >= dimension * (dimension - 1) and push_from == 'B'):
         return False
@@ -45,35 +15,80 @@ def check_move(board, turn, index, push_from):
 
 def apply_move(board, turn, index, push_from):
     dimension = int(math.sqrt(len(board)))
-    print(f"debug index = {index}, dimension = {dimension}")
     row_no = math.ceil((index + 1) / dimension) 
     column_no = (index + 1) % dimension
-    print(row_no)
-    print(column_no)
+    if column_no == 0:
+        column_no = 5
+    print(f"debug purpose; index = {index}, dimension = {dimension}, row={row_no}, column = {column_no}")
+    if turn == 1:
+        board[index] = 1
+    elif turn == 2:
+        board[index] = 2
     placeholder = board[index]
     if push_from == 'L':
-        for i in range (dimension - 1):
+        for i in range (column_no - 1):
+            print(f"i = {i}")
             board[index - i] = board[index - i - 1]
-        board[index - dimension + 1] = placeholder
+        board[index - column_no + 1] = placeholder
     elif push_from == 'R':
-        for i in range (dimension - 1):
+        for i in range (dimension - column_no):
             board[index + i] = board[index + i + 1]
-        board[index + dimension - 1] = placeholder
+        board[index + dimension - column_no] = placeholder
     elif push_from == 'T':
-        for i in range (dimension - 1):
+        for i in range (row_no - 1):
             board[index] = board[index - dimension * (i + 1)]
-        board[index - dimension * (dimension - 1)] = placeholder
+        board[index - dimension * (row_no - 1)] = placeholder
     elif push_from == 'B':
-        for i in range (dimension - 1):
-            board[index] = board[index ]
+        for i in range (dimension - row_no):
+            board[index] = board[index + dimension * (i + 1)]
+        board[index + dimension * (dimension - row_no)] = placeholder
     return board[:]
 
 def check_victory(board, who_played):
-    # implement your function here
-    return -1
+    dimension = int(math.sqrt(len(board)))
+    display_board(board)
+    # check row
+    for i in range(dimension):
+        same = 0
+        for j in range(dimension - 1):
+            if board[i * dimension + j] == board[i * dimension + j + 1]:
+                same = same + 1
+                if same == dimension - 1:
+                    return board[i * dimension]
+    # check column
+    for k in range(dimension):
+        same = 0
+        for l in range(1, dimension, 1):
+            if board[k + l * dimension] == board[k + (l - 1) * dimension]:
+                same = same + 1
+                if same == dimension - 1:
+                    return board[k]
+    # check diagonals
+    same = 0
+    for m in range(dimension - 1):
+        if board[m * (dimension + 1)] == board[(m + 1) * (dimension + 1)]:
+            same = same + 1
+            if same == dimension - 1:
+                return board[0]
+    same = 0
+    for n in range(dimension - 1):
+        if board[m * (dimension - 1)] == board[(m + 1) * (dimension + 1)]:
+            same = same + 1
+            if same == dimension - 1:
+                return board[dimension - 1]
+    return 0
 
 def computer_move(board, turn, level):
-    # implement your function here
+    if level == 1:
+        while(True):
+            index = random.randint(0, len(board) - 1)
+            choice = ['L', 'R', 'B', 'T']
+            push_from = choice[random.randint(0, 3)]
+            if check_move(board, turn, index, push_from) == True:
+                break
+        return index, push_from
+    else:
+        pass
     return (0,'B')
     
 def display_board(board):
@@ -85,11 +100,37 @@ def display_board(board):
 
 def menu():
     # implement your function here
-    pass
+       #prompt for the dimension form the user
+    #IMPROVE LATER ON > check the data type, make sure it's integer, add limit
+    n = int(input("Choose dimention: "))
+    #board = [i for i in range(int(n*n))]
+
+    board = [0 for i in range(n*n)]
+    display_board(board)
+    turn = 2
+    while(True):
+        if turn == 1:
+            turn = 2
+        if turn == 2:
+            turn = 1
+        #input from the user
+        while(True):
+            print(f"It is player {turn} turn.")
+            input_index = int(input("Enter index: "))
+            input_push_from = input("Enter push direction: ")
+            if check_move(board, turn, input_index, input_push_from) == True:
+                break
+            print("Invalid move!")
+        board = apply_move(board, turn, input_index, input_push_from)
+        victory = check_victory()
+        print(f"victory = {victory}")
+        display_board(board)
+        
+            
+    #display_board(board)
 
  
 if __name__ == "__main__":
     menu()
 
 
-main()
