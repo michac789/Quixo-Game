@@ -31,8 +31,8 @@ def test():
     
     board = [1,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0]
     board_result = [1,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0]
-    apply_move(board, 1, 1, 'B')
-    if board == board_result: print("test apply_move 1 - OK !")
+    board_tmp = apply_move(board, 1, 1, 'B')
+    if board_tmp == board_result: print("test apply_move 1 - OK !")
     else: print("test apply_move 1 - Problem in the apply_move function output !")
     
     board = [0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0]
@@ -58,6 +58,7 @@ def test():
     print()
     
     board = [1,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0]
+    print(check_victory(board, 1))
     if check_victory(board, 1)==0: print("test check_victory 1 - OK !")
     else: print("test check_victory 1 - Problem in the check_victory function output !")
     

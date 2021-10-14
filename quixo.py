@@ -19,32 +19,30 @@ def apply_move(board, turn, index, push_from):
     row_no = math.ceil((index + 1) / dimension) 
     column_no = index % dimension + 1
     if turn == 1:
-        board[index] = 1
+        value = 1
     elif turn == 2:
-        board[index] = 2
-    placeholder = board[index]
+        value = 2
     if push_from == 'L':
         for i in range (column_no - 1):
             board[index - i] = board[index - i - 1]
-        board[index - column_no + 1] = placeholder
+        board[index - column_no + 1] = value
     elif push_from == 'R':
         for i in range (dimension - column_no):
             board[index + i] = board[index + i + 1]
-        board[index + dimension - column_no] = placeholder
+        board[index + dimension - column_no] = value
     elif push_from == 'T':
         for i in range (row_no - 1):
             board[index - dimension * i] = board[index - dimension * (i + 1)]
-        board[index - dimension * (row_no - 1)] = placeholder
+        board[index - dimension * (row_no - 1)] = value
     elif push_from == 'B':
         for i in range (dimension - row_no):
             board[index + dimension * i] = board[index + dimension * (i + 1)]
-        board[index + dimension * (dimension - row_no)] = placeholder
+        board[index + dimension * (dimension - row_no)] = value
     return board[:]
 
 def check_victory(board, who_played):
     dimension = int(math.sqrt(len(board)))
     winner = [False for i in range(3)]
-    # check row
     for i in range(dimension):
         same = 0
         for j in range(dimension - 1):
@@ -52,7 +50,6 @@ def check_victory(board, who_played):
                 same = same + 1
                 if same == dimension - 1:
                     winner[board[i * dimension]] = True
-    # check column
     for k in range(dimension):
         same = 0
         for l in range(1, dimension, 1):
@@ -60,7 +57,6 @@ def check_victory(board, who_played):
                 same = same + 1
                 if same == dimension - 1:
                     winner[board[k]] = True
-    # check diagonals
     same = 0
     for m in range(dimension - 1):
         if board[m * (dimension + 1)] == board[(m + 1) * (dimension + 1)]:
@@ -69,16 +65,14 @@ def check_victory(board, who_played):
                 winner[board[0]] = True
     same = 0
     for n in range(dimension - 1):
-        if board[m * (dimension - 1)] == board[(m + 1) * (dimension + 1)]:
+        if board[n * (dimension - 1)] == board[(n + 1) * (dimension + 1)]:
             same = same + 1
             if same == dimension - 1:
                 winner[board[dimension - 1]] = True
-    # corner case - 2 winners
     if winner[1] == True and winner[2] == True:
         if who_played == 1:
             return 2
-        elif who_played == 2:
-            return 1
+        return 1
     if winner[1] == True:
         return 1
     if winner[2] == True:
@@ -163,6 +157,9 @@ def checkint(input):
     except ValueError:
         return False
  
+def randomize_valid_move():
+    pass
+
 if __name__ == "__main__":
     menu()
 
