@@ -1,5 +1,6 @@
 import random
 import math
+import sys
 
 def check_move(board, turn, index, push_from):
     dimension = int(math.sqrt(len(board)))
@@ -36,12 +37,13 @@ def apply_move(board, turn, index, push_from):
         board[index + dimension - column_no] = placeholder
     elif push_from == 'T':
         for i in range (row_no - 1):
-            board[index] = board[index - dimension * (i + 1)]
+            board[index - dimension * i] = board[index - dimension * (i + 1)]
         board[index - dimension * (row_no - 1)] = placeholder
     elif push_from == 'B':
         for i in range (dimension - row_no):
-            board[index] = board[index + dimension * (i + 1)]
+            board[index + dimension * i] = board[index + dimension * (i + 1)]
         board[index + dimension * (dimension - row_no)] = placeholder
+    display_board(board)
     return board[:]
 
 def check_victory(board, who_played):
@@ -99,20 +101,39 @@ def display_board(board):
         print("")
 
 def menu():
-    # implement your function here
-       #prompt for the dimension form the user
-    #IMPROVE LATER ON > check the data type, make sure it's integer, add limit
-    n = int(input("Choose dimention: "))
-    #board = [i for i in range(int(n*n))]
-
-    board = [0 for i in range(n*n)]
-    display_board(board)
-    turn = 2
+    # prompt the user for the size of the board
+    global n
     while(True):
-        if turn == 1:
-            turn = 2
-        if turn == 2:
-            turn = 1
+        n = input("Choose dimention: ")
+        if checkint(n) == True:
+            if 1 < int(n) < 11:
+                break
+        print("Invalid input! Please input only an integer between 2 and 10 inclusive!")
+
+    # prompt the user for game modes (2v2 or VS computer)
+    print("Type the numbers below to choose game modes: ")
+    print("0: 2v2 against other human players")
+    for i in range(5):
+        print(f"{i + 1}: against computer Level {i + 1}")
+    while(True):
+        level = input("Enter your choice: ")
+        if checkint(level) == True:
+            if 0 <= int(level) <= 5:
+                break
+        print("Invalid input! You can only type the integer 0, 1, 2, 3, 4 or 5!")
+    
+    if int(level) > 0:
+        print("Sorry, this game mode is not available yet right now!")
+        sys.exit()
+    print("Playing against other human players!")
+    
+    board = [0 for i in range(int(n)*int(n))]
+    display_board(board)
+    temp = -1
+    while(True):
+        temp = temp + 1
+        turn = (temp % 2) + 1
+        
         #input from the user
         while(True):
             print(f"It is player {turn} turn.")
@@ -122,13 +143,19 @@ def menu():
                 break
             print("Invalid move!")
         board = apply_move(board, turn, input_index, input_push_from)
-        victory = check_victory()
+        victory = check_victory(board, turn)
         print(f"victory = {victory}")
         display_board(board)
         
             
     #display_board(board)
 
+def checkint(input):
+    try:
+        val = int(input)
+        return True
+    except ValueError:
+        return False
  
 if __name__ == "__main__":
     menu()
