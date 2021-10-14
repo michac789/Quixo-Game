@@ -17,10 +17,7 @@ def check_move(board, turn, index, push_from):
 def apply_move(board, turn, index, push_from):
     dimension = int(math.sqrt(len(board)))
     row_no = math.ceil((index + 1) / dimension) 
-    column_no = (index + 1) % dimension
-    if column_no == 0:
-        column_no = 5
-    print(f"debug purpose; index = {index}, dimension = {dimension}, row={row_no}, column = {column_no}")
+    column_no = index % dimension + 1
     if turn == 1:
         board[index] = 1
     elif turn == 2:
@@ -28,7 +25,6 @@ def apply_move(board, turn, index, push_from):
     placeholder = board[index]
     if push_from == 'L':
         for i in range (column_no - 1):
-            print(f"i = {i}")
             board[index - i] = board[index - i - 1]
         board[index - column_no + 1] = placeholder
     elif push_from == 'R':
@@ -43,12 +39,10 @@ def apply_move(board, turn, index, push_from):
         for i in range (dimension - row_no):
             board[index + dimension * i] = board[index + dimension * (i + 1)]
         board[index + dimension * (dimension - row_no)] = placeholder
-    display_board(board)
     return board[:]
 
 def check_victory(board, who_played):
     dimension = int(math.sqrt(len(board)))
-    display_board(board)
     winner = [False for i in range(3)]
     # check row
     for i in range(dimension):
