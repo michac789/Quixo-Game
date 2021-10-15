@@ -106,11 +106,18 @@ def computer_move(board, turn, level):
 
 def display_board(board):
     dimension = int(math.sqrt(len(board)))
+    print("  ", end="")
     for i in range(dimension):
+        print(f"   {i + 1}", end="")
+    print("\n")
+    dimension = int(math.sqrt(len(board)))
+    for i in range(dimension):
+        print(f"{i + 1}    ", end="")
         for j in range(dimension):
-            print(board[i * dimension + j], end="     ")
+            print(board[i * dimension + j], end="   ")
         print("")
-    print("")        
+    print("")
+
 
 def menu():
     # prompt the user for the size of the board
@@ -308,10 +315,6 @@ def minimax(board, turn, depth, maximizing):
             if score_predict < score:
                 score = score_predict
     return score
-
-
-
-
 
 if __name__ == "__main__":
     menu()
