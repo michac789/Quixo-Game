@@ -82,20 +82,22 @@ def check_victory(board, who_played):
     return 0
 
 def computer_move(board, turn, level):
+    dimension = int(math.sqrt(len(board)))
+    list = all_valid_moves(board, turn)
     if level == 1:
-        list = all_valid_moves(board, turn)
         x = random.randint(0, len(list))
         return list[x][0], list[x][1]
-    elif level == 2:
-        pass
-    elif level == 3:
-        pass
     else:
-        list = all_valid_moves(board, turn)
         best_move = [11, 0, 0]
         for i in range(len(list)):
             simulationboard = apply_move(board, turn, list[i][0], list[i][1])
-            score = minimax(simulationboard, turn + 1, 2, False)
+            if level == 2:
+                time.sleep(1)
+                score = minimax(simulationboard, turn % 2 + 1, 0, False)
+            elif level == 3:
+                score = minimax(simulationboard, turn % 2 + 1, 2, False)
+            else:
+                score = minimax(simulationboard, turn % 2 + 1, 4, False)
             if best_move[0] > score:
                 best_move[0] = score
                 best_move[1] = list[i][0]
@@ -127,7 +129,7 @@ def menu():
     while(True):
         level = input("Enter your choice: ")
         if checkint(level) == True:
-            if 0 <= int(level) <= 5:
+            if 0 <= int(level) < 5:
                 break
         print("Invalid input! You can only type the integer 0, 1, 2, 3, or 4!")
 
@@ -172,7 +174,7 @@ def menu():
             if check_victory != 0:
                 print(f"Congratulations! Player {check_victory(board, turn)} wins!")
                 sys.exit(0)
-    elif int(level) == 1:
+    else:
         while(True):
             temp = temp + 1
             turn = (temp % 2) + 1
@@ -206,18 +208,25 @@ def menu():
             board = apply_move(board, turn, input_index, input_push_from)
             display_board(board)
             if check_victory(board, turn) != 0:
-                print(f"Congratulations! You win against level 1 computer!")
+                print(f"Congratulations! You win against computer!")
                 sys.exit(0)
+            
+            if int(level) == 1:
+                print("Computer level 1 is thinking...")
+                time.sleep(1)
+                temp = temp + 1
+                compindex, comppush = computer_move(board, turn % 2 + 1, 1)
+            else:
+                print(f"Computer level {level} is thinking...")
+                temp = temp + 1
+                compindex, comppush = computer_move(board, turn % 2 + 1, int(level))
 
-            print("Computer is thinking...")
-            time.sleep(1)
-            temp = temp + 1
-            compindex, comppush = computer_move(board, turn % 2 + 1, 1)
             board = apply_move(board, turn % 2 + 1, compindex, comppush)
             display_board(board)
             if check_victory(board, turn) != 0:
                 print(f"The computer wins! Try again!")
                 sys.exit(0)
+
             
     #display_board(board)
 
@@ -285,7 +294,7 @@ def minimax(board, turn, depth, maximizing):
     if maximizing == True:
         score = -11
         for i in range(len(valid_moves)):
-            print(f"board = {display_board(board)}")
+            #DEBUG print(f"board = {display_board(board)}")
             board_simul = apply_move(board, turn, valid_moves[i][0], valid_moves[i][1])
             score_predict = minimax(board_simul, (turn % 2) + 1, depth - 1, False)
             if score_predict > score:
@@ -293,7 +302,7 @@ def minimax(board, turn, depth, maximizing):
     else:
         score = 11
         for i in range(len(valid_moves)):
-            print(f"board = {display_board(board)}")
+            #DEBUG print(f"board = {display_board(board)}")
             board_simul = apply_move(board, turn, valid_moves[i][0], valid_moves[i][1])
             score_predict = minimax(board_simul, (turn % 2) + 1, depth - 1, True)
             if score_predict < score:
