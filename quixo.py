@@ -1,6 +1,7 @@
 import random
 import math
 import sys
+import time
 
 def check_move(board, turn, index, push_from):
     dimension = int(math.sqrt(len(board)))
@@ -83,7 +84,7 @@ def check_victory(board, who_played):
 def computer_move(board, turn, level):
     if level == 1:
         list = all_valid_moves(board, turn)
-        x = random.randint(0, len(all_valid_moves))
+        x = random.randint(0, len(list))
         return list[x][0], list[x][1]
     elif level == 2:
         pass
@@ -131,10 +132,47 @@ def menu():
         print("Invalid input! You can only type the integer 0, 1, 2, 3, or 4!")
 
     # 2 players (human vs human)
+    temp = -1
+    board = [0 for i in range(int(n)*int(n))]
+    display_board(board)
     if int(level) == 0:
-        board = [0 for i in range(int(n)*int(n))]
-        display_board(board)
-        temp = -1
+        while(True):
+            temp = temp + 1
+            turn = (temp % 2) + 1
+            while(True):
+                print(f"It is player {turn} turn.")
+                while(True):
+                    row = input("Enter row: ")
+                    if checkint(row) == True:
+                        if 0 < int(row) < int(n) + 1:
+                            break
+                    print(f"Please enter a valid row number between 1 until {n} inclusive!")
+                while(True):
+                    column = input("Enter column: ")
+                    if checkint(column) == True:
+                        if 0 < int(column) < int(n) + 1:
+                            break
+                    print(f"Please enter a valid column number between 1 until {n} inclusive!")
+                while(True):
+                    input_push_from = input("Enter push direction: ")
+                    allowed = ['L', 'R', 'B', 'T']
+                    valid = False
+                    for i in range(4):
+                        if input_push_from == allowed[i]:
+                            valid = True
+                    if valid == True:
+                        break
+                input_index = (int(row) - 1) * int(n) + int(column) - 1
+                if check_move(board, turn, input_index, input_push_from) == True:
+                    break
+                print("Invalid move!")
+
+            board = apply_move(board, turn, input_index, input_push_from)
+            display_board(board)
+            if check_victory != 0:
+                print(f"Congratulations! Player {check_victory(board, turn)} wins!")
+                sys.exit(0)
+    elif int(level) == 1:
         while(True):
             temp = temp + 1
             turn = (temp % 2) + 1
@@ -167,11 +205,19 @@ def menu():
                 print("Invalid move!")
             board = apply_move(board, turn, input_index, input_push_from)
             display_board(board)
-            if check_victory != 0:
-                print(f"Congratulations! Player {check_victory(board, turn)} wins!")
+            if check_victory(board, turn) != 0:
+                print(f"Congratulations! You win against level 1 computer!")
                 sys.exit(0)
-    elif int(level) == 1:
-        pass
+
+            print("Computer is thinking...")
+            time.sleep(1)
+            temp = temp + 1
+            compindex, comppush = computer_move(board, turn % 2 + 1, 1)
+            board = apply_move(board, turn % 2 + 1, compindex, comppush)
+            display_board(board)
+            if check_victory(board, turn) != 0:
+                print(f"The computer wins! Try again!")
+                sys.exit(0)
             
     #display_board(board)
 
