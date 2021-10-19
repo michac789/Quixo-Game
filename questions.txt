@@ -14,4 +14,9 @@ Can we use some common libraries such as:
 'math' to generate some mathematical operations
 'sys' to be able to exit (we might not need this again later)
 
+4.
+what kind of user interface to use? tkinter? can we seperate the code?
+
+
+
 

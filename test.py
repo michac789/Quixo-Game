@@ -31,8 +31,8 @@ def test():
     
     board = [1,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0]
     board_result = [1,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0]
-    board_tmp = apply_move(board, 1, 1, 'B')
-    if board_tmp == board_result: print("test apply_move 1 - OK !")
+    apply_move(board, 1, 1, 'B')
+    if board == board_result: print("test apply_move 1 - OK !")
     else: print("test apply_move 1 - Problem in the apply_move function output !")
     
     board = [0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0]
@@ -94,6 +94,7 @@ def test():
     else: print("test computer_move 2 - Problem in the computer_move function output !")
     
     board = [1,1,1,1,0,  2,0,0,0,2,  0,0,0,0,2,  2,0,0,0,2,  0,0,0,0,2]
+    display_board(board)
     if computer_move(board, 1, 2) in [(4,'L')]: print("test computer_move 2 - OK !")
     else: print("test computer_move 2 - Problem in the computer_move function output !")
   

@@ -17,69 +17,67 @@ def check_move(board, turn, index, push_from):
 
 def apply_move(board, turn, index, push_from):
     dimension = int(math.sqrt(len(board)))
-    row_no = math.ceil((index + 1) / dimension) 
-    column_no = index % dimension + 1
     board_temp = board[:]
-    if turn == 1:
-        value = 1
-    elif turn == 2:
-        value = 2
-    if push_from == 'L':
-        for i in range (column_no - 1):
-            board_temp[index - i] = board_temp[index - i - 1]
-        board_temp[index - column_no + 1] = value
-    elif push_from == 'R':
-        for i in range (dimension - column_no):
-            board_temp[index + i] = board_temp[index + i + 1]
-        board_temp[index + dimension - column_no] = value
-    elif push_from == 'T':
-        for i in range (row_no - 1):
-            board_temp[index - dimension * i] = board_temp[index - dimension * (i + 1)]
-        board_temp[index - dimension * (row_no - 1)] = value
+    # move top
+    if push_from == 'T':
+        for i in range(index, index % dimension, -dimension): 
+            board_temp[i] = board_temp[i - dimension] 
+        board_temp[index%dimension] = turn 
+    # move bottom
     elif push_from == 'B':
-        for i in range (dimension - row_no):
-            board_temp[index + dimension * i] = board_temp[index + dimension * (i + 1)]
-        board_temp[index + dimension * (dimension - row_no)] = value
+        for i in range(index, dimension * (dimension - 1) + index % dimension, dimension): 
+            board_temp[i] = board_temp[i + dimension] 
+        board_temp[index % dimension + dimension * (dimension - 1)] = turn  
+    # move right
+    elif push_from == 'R':
+        for i in range(index, (index // dimension + 1) * dimension - 1): 
+            board_temp[i] = board_temp[i + 1]  
+        board_temp[(index // dimension+1) * dimension - 1] = turn
+    # move left
+    elif push_from == 'L':
+        for i in range(index, index // dimension * dimension, -1): 
+            board_temp[i] = board_temp[i-1]  
+        board_temp[index // dimension * dimension] = turn        
     return board_temp[:]
 
 def check_victory(board, who_played):
     dimension = int(math.sqrt(len(board)))
-    winner = [False for i in range(3)]
-    for i in range(dimension):
-        same = 0
-        for j in range(dimension - 1):
-            if board[i * dimension + j] == board[i * dimension + j + 1]:
-                same = same + 1
-                if same == dimension - 1:
-                    winner[board[i * dimension]] = True
-    for k in range(dimension):
-        same = 0
-        for l in range(1, dimension, 1):
-            if board[k + l * dimension] == board[k + (l - 1) * dimension]:
-                same = same + 1
-                if same == dimension - 1:
-                    winner[board[k]] = True
-    same = 0
-    for m in range(dimension - 1):
-        if board[m * (dimension + 1)] == board[(m + 1) * (dimension + 1)]:
-            same = same + 1
-            if same == dimension - 1:
-                winner[board[0]] = True
-    same = 0
-    for n in range(dimension - 1):
-        if board[n * (dimension - 1)] == board[(n + 1) * (dimension + 1)]:
-            same = same + 1
-            if same == dimension - 1:
-                winner[board[dimension - 1]] = True
-    if winner[1] == True and winner[2] == True:
-        if who_played == 1:
-            return 2
-        return 1
-    if winner[1] == True:
-        return 1
-    if winner[2] == True:
-        return 2
-    return 0
+    winner = 0  
+    # checking row
+    for row in range(dimension):
+        victory = True
+        for j in range (dimension - 1):
+            if board[row * dimension + j] == 0 or board[row * dimension + j] != board[row * dimension + j + 1]:
+                victory = False
+        if victory == True and (winner == who_played or winner == 0):
+            winner = board[row * dimension + j]
+    # checking column
+    for column in range(dimension):
+        victory = True
+        for i in range(dimension - 1):
+            if board[column + i * dimension] == 0 or board[column + i * dimension] != board[column + (i + 1) * dimension]: 
+                victory = False  
+        if victory == True and (winner == who_played or winner == 0): 
+            winner = board[column + i * dimension] 
+    # checking diagonal from right  
+    victory = True  
+    for i in range (1, dimension): 
+        if board[(dimension - 1) * i] == 0 or board[(dimension - 1)*i] != board [(dimension - 1) * (i + 1)]: 
+            victory = False  
+    if victory == True and (winner == who_played or winner == 0): 
+        winner = board[(dimension - 1) * i] 
+    victory = True  
+    # checking diagonal from left  
+    for i in range (dimension - 1): 
+        if board[(dimension + 1) * i] == 0 or board[(dimension + 1) * i] != board[(dimension + 1) * (i + 1)]: 
+            victory = False  
+    if victory == True and (winner == who_played or winner == 0): 
+        winner = board[(dimension + 1) * i]  
+    if winner == 0: 
+        return 0 
+    else:
+        return winner
+
 
 def computer_move(board, turn, level):
     dimension = int(math.sqrt(len(board)))
@@ -87,48 +85,89 @@ def computer_move(board, turn, level):
     if level == 1:
         x = random.randint(0, len(list))
         return list[x][0], list[x][1]
-    else:
-        best_move = [11, 0, 0]
-        for i in range(len(list)):
-            simulationboard = apply_move(board, turn, list[i][0], list[i][1])
-            if level == 2:
-                time.sleep(1)
-                score = minimax(simulationboard, turn % 2 + 1, 0, False)
-            elif level == 3:
-                score = minimax(simulationboard, turn % 2 + 1, 2, False)
+    elif level == 2:
+        good_moves = []
+        neutral_moves = []
+        bad_moves = []
+        for moves in list:
+            board_temp = apply_move(board, turn, moves[0], moves[1])
+            if check_victory(board_temp, turn) == turn:
+                good_moves.append((moves[0], moves[1]))
+            elif check_victory(board_temp, turn) == turn % 2 + 1:
+                bad_moves.append((moves[0], moves[1]))
             else:
-                score = minimax(simulationboard, turn % 2 + 1, 4, False)
+                neutral_moves.append((moves[0], moves[1]))
+        if len(good_moves) > 0:
+            x = random.randint(0, len(good_moves) - 1)
+            return good_moves[x][0], good_moves[x][1]
+        elif len(neutral_moves) > 0:
+            x = random.randint(0, len(neutral_moves) - 1)
+            return neutral_moves[x][0], neutral_moves[x][1]
+        else:
+            x = random.randint(0, len(bad_moves) - 1)
+            return neutral_moves[x][0], neutral_moves[x][1]
+    if turn == 2:
+        max = False
+        best_move = [101, 0, 0]
+    else:
+        max = True
+        best_move = [-101, 0, 0]
+    for i in range(len(list)):
+        score = 101
+        simulationboard = apply_move(board, turn, list[i][0], list[i][1])
+        if level == 3:
+            score = minimax(simulationboard, turn % 2 + 1, 2, max)
+            #print(score)
+        else:
+            if len(all_valid_moves(board, turn)) > 20:
+                score = minimax(simulationboard, turn % 2 + 1, 2, max)
+            else:
+                score = minimax(simulationboard, turn % 2 + 1, 4, max)
+        #print(f"0: {best_move[0]}, 1: {best_move[1]}, 2: {best_move[2]}, 3: {list[i][0]}{list[i][1]}, i={i}, score={score}")
+        if max == False:
             if best_move[0] > score:
                 best_move[0] = score
                 best_move[1] = list[i][0]
                 best_move[2] = list[i][1]
-        return best_move[1], best_move[2]
+        elif max == True:
+            if best_move[0] < score:
+                best_move[0] = score
+                best_move[1] = list[i][0]
+                best_move[2] = list[i][1]
+        if best_move[0] == score:
+            if random.randint(0, 1) == 0:
+                best_move[0] = score
+                best_move[1] = list[i][0]
+                best_move[2] = list[i][1]
+        #print(f"0: {best_move[0]}, 1: {best_move[1]}, 2: {best_move[2]}, 3: {list[i][0]}{list[i][1]}, i={i}")
+    return best_move[1], best_move[2]
+
+
+def xo(input):
+    if input == 1:
+        return 'X'
+    if input == 2:
+        return 'O'
+    return '_'
+
 
 def display_board(board):
     dimension = int(math.sqrt(len(board)))
     print("  ", end="")
     for i in range(dimension):
-        print(f"   {i + 1}", end="")
+        print("  ", i + 1, end="")
     print("\n")
-    dimension = int(math.sqrt(len(board)))
     for i in range(dimension):
         print(f"{i + 1}    ", end="")
         for j in range(dimension):
-            print(board[i * dimension + j], end="   ")
-        print("")
+            print(xo(board[i * dimension + j]), end="   ")
+        print("\n")
     print("")
 
 
 def menu():
-    # prompt the user for the size of the board
-    while(True):
-        n = input("Choose dimension: ")
-        if checkint(n) == True:
-            if 1 < int(n) < 11:
-                break
-        print("Invalid input! Please input only an integer between 2 and 10 inclusive!")
-
     # prompt the user for game modes (two human players or vs computer level 1-4)
+    print("Welcome to Quixo")
     print("Type the number below to choose game modes: ")
     print("0: two players (human vs human)")
     for i in range(4):
@@ -136,9 +175,17 @@ def menu():
     while(True):
         level = input("Enter your choice: ")
         if checkint(level) == True:
-            if 0 <= int(level) < 5:
+            if 0 <= int(level) < 6:
                 break
         print("Invalid input! You can only type the integer 0, 1, 2, 3, or 4!")
+
+    # prompt the user for the size of the board
+    while(True):
+        n = input("Choose dimension: ")
+        if checkint(n) == True:
+            if 1 < int(n) < 100:
+                break
+        print("Invalid input! Please input only an integer between 2 and 99 inclusive!")
 
     # 2 players (human vs human)
     temp = -1
@@ -178,9 +225,34 @@ def menu():
 
             board = apply_move(board, turn, input_index, input_push_from)
             display_board(board)
-            if check_victory != 0:
+            if check_victory != 0: #BUGGY
                 print(f"Congratulations! Player {check_victory(board, turn)} wins!")
                 sys.exit(0)
+    elif int(level) == 5:
+        while(True):
+            temp = temp + 1
+            turn = (temp % 2) + 1
+            print(f"Turn: {turn}, comp lv3")
+            compindex, comppush = computer_move(board, turn, 3)
+            print(f"Move: row {compindex // int(n) + 1}, column {(compindex % int(n)) + 1}, push_from {comppush}")
+            board = apply_move(board, turn, compindex, comppush)
+            display_board(board)
+            if check_victory(board, turn) != 0:
+                print(f"Computer 3 win!")
+                sys.exit(0)
+            
+            temp += 1
+            turn = (turn % 2) + 1
+            print(f"Turn: {turn}, comp lv4")
+            compindex, comppush = computer_move(board, turn, 4)
+            print(f"Move: row {compindex // int(n) + 1}, column {(compindex % int(n)) + 1}, push_from {comppush}")
+            board = apply_move(board, turn, compindex, comppush)
+            display_board(board)
+            if check_victory(board, turn) != 0:
+                print(f"Computer 4 win!")
+                sys.exit(0)
+            
+
     else:
         while(True):
             temp = temp + 1
@@ -215,27 +287,23 @@ def menu():
             board = apply_move(board, turn, input_index, input_push_from)
             display_board(board)
             if check_victory(board, turn) != 0:
-                print(f"Congratulations! You win against computer!")
+                print("Congratulations! You win against computer level ", level)
                 sys.exit(0)
             
             if int(level) == 1:
                 print("Computer level 1 is thinking...")
-                time.sleep(1)
                 temp = temp + 1
                 compindex, comppush = computer_move(board, turn % 2 + 1, 1)
             else:
                 print(f"Computer level {level} is thinking...")
                 temp = temp + 1
                 compindex, comppush = computer_move(board, turn % 2 + 1, int(level))
-
+            print(f"Move: row {compindex // int(n) + 1}, column {(compindex % int(n)) + 1}, push_from {comppush}")
             board = apply_move(board, turn % 2 + 1, compindex, comppush)
             display_board(board)
             if check_victory(board, turn) != 0:
                 print(f"The computer wins! Try again!")
                 sys.exit(0)
-
-            
-    #display_board(board)
 
 def checkint(input):
     try:
@@ -267,9 +335,9 @@ def positional_value(board, turn):
     dimension = int(math.sqrt(len(board)))
     score = 0
     if check_victory(board, turn) == 1:
-        return 10
+        return 100
     if check_victory(board, turn) == 2:
-        return -10
+        return -100
     for i in range(1, 3, 1):
         m = 1
         if i == 2:
@@ -288,9 +356,12 @@ def positional_value(board, turn):
                         counter[3] += 1
             for l in range(4):
                 if counter[l] >= dimension - 2:
-                    score += (1 * m)
+                    score += (10 * m)
                 if counter[l] >= dimension - 1:
-                    score += (1 * m)
+                    score += (10 * m)
+        for q in range(len(board)):
+            if board[q] == i:
+                score += (1 * m)
     return score
 
 def minimax(board, turn, depth, maximizing):
@@ -301,7 +372,6 @@ def minimax(board, turn, depth, maximizing):
     if maximizing == True:
         score = -11
         for i in range(len(valid_moves)):
-            #DEBUG print(f"board = {display_board(board)}")
             board_simul = apply_move(board, turn, valid_moves[i][0], valid_moves[i][1])
             score_predict = minimax(board_simul, (turn % 2) + 1, depth - 1, False)
             if score_predict > score:
@@ -309,7 +379,6 @@ def minimax(board, turn, depth, maximizing):
     else:
         score = 11
         for i in range(len(valid_moves)):
-            #DEBUG print(f"board = {display_board(board)}")
             board_simul = apply_move(board, turn, valid_moves[i][0], valid_moves[i][1])
             score_predict = minimax(board_simul, (turn % 2) + 1, depth - 1, True)
             if score_predict < score:
