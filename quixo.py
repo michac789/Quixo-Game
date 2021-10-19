@@ -1,7 +1,6 @@
 import random
 import math
 import sys
-#TRY
 
 def check_move(board, turn, index, push_from):
     dimension = int(math.sqrt(len(board)))
@@ -114,22 +113,25 @@ def computer_move(board, turn, level): #NEED TO FIX
             x = random.randint(0, len(bad_moves) - 1)
             return neutral_moves[x][0], neutral_moves[x][1]
     else:
-        score = 101
-        best_move = [101, 0, 0]
+        score = 1000
+        best_move = [1000, 0, 0]
         for i in range(len(list)):
             simulationboard = apply_move(board, turn, list[i][0], list[i][1])
             if level == 3:
-                score = minimax(simulationboard, turn, 2, True, -101, 101)
+                score = minimax(simulationboard, turn, 1, True, -1000, 1000)
                 #print(score)
             else:
-                score = minimax(simulationboard, turn, 3, True, -101, 101)
-                print(f"move: {list[i][0]}{list[i][1]}, score = {score}")
+                if len(list) > 30:
+                    score = minimax(simulationboard, turn, 2, True, -1000, 1000)
+                else:
+                    score = minimax(simulationboard, turn, 3, True, -1000, 1000)
+                #print(f"move: {list[i][0]}{list[i][1]}, score = {score}")
             #print(f"0: {best_move[0]}, 1: {best_move[1]}, 2: {best_move[2]}, 3: {list[i][0]}{list[i][1]}, i={i}, score={score}")
             if best_move[0] > score:
                 best_move[0] = score
                 best_move[1] = list[i][0]
                 best_move[2] = list[i][1]
-            print(f"0: {best_move[0]}, 1: {best_move[1]}, 2: {best_move[2]}, 3: {list[i][0]}{list[i][1]}, i={i}")
+            #print(f"0: {best_move[0]}, 1: {best_move[1]}, 2: {best_move[2]}, 3: {list[i][0]}{list[i][1]}, i={i}")
         return best_move[1], best_move[2]
 
 def display_board(board):
@@ -299,9 +301,9 @@ def positional_value(board, turn): # Returns score of a certain board state (pos
         m = 1
         if i == 2:
             m = -1
-        # Score 100 if player 1 wins, -100 if player 2 wins
+        # Score 999 if player 1 wins, -999 if player 2 wins
         if check_victory(board, turn) == i:
-            return 100 * m
+            return 999 * m
         # For any possible winning directions, score 4 if there are (dimension - 2) pieces, score 8 if there are (dimension - 1) pieces
         for j in range(dimension):
             counter = [0 for i in range(4)]
@@ -320,31 +322,34 @@ def positional_value(board, turn): # Returns score of a certain board state (pos
                     score += (4 * m)
                 if counter[l] >= dimension - 1:
                     score += (4 * m)
-        # For every pieces ('O' or 'X') on the board, each contribute 1 point each
+        # For every pieces ('O' or 'X') on the board, each piece contribute 1 point
         for q in range(len(board)):
             if board[q] == i:
                 score += (1 * m)
     return score
 
-def minimax(board, turn, depth, maximizing, alpha, beta):
+def minimax(board, turn, depth, maximizing, alpha, beta): # Recursive function that returns predicted score of a move, added with alpha beta pruning
+    # When game over or depth is = 0, evaluate the score of the state
     if depth == 0 or check_victory(board, turn) != 0:
         return positional_value(board, turn)
     valid_moves = all_valid_moves(board, turn)
     turn = turn % 2 + 1
+    # Optimizing move for player 1 (maximize score)
     if maximizing == True:
-        score = -11
+        score = -1000
         for i in range(len(valid_moves)):
             board_simul = apply_move(board, turn, valid_moves[i][0], valid_moves[i][1])
-            score_predict = minimax(board_simul, turn, depth - 1, False, -101, 101)
+            score_predict = minimax(board_simul, turn, depth - 1, False, -1000, 1000)
             score = max(score, score_predict)
             alpha = max(alpha, score)
             if beta <= alpha:
                 break
+    # Optimizing move for player 2 (minimize score)
     else:
-        score = 11
+        score = 1000
         for i in range(len(valid_moves)):
             board_simul = apply_move(board, turn, valid_moves[i][0], valid_moves[i][1])
-            score_predict = minimax(board_simul, turn, depth - 1, True, -101, 101)
+            score_predict = minimax(board_simul, turn, depth - 1, True, -1000, 1000)
             score = min(score, score_predict)
             beta = min(beta, score)
             if beta <= alpha:
