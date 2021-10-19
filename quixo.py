@@ -5,42 +5,47 @@ import time
 
 def check_move(board, turn, index, push_from):
     dimension = int(math.sqrt(len(board)))
+    # The person cannot pick the opponent's piece (of different sign)
     if (turn == 1 and board[index] == 2) or (turn == 2 and board[index] == 1):
         return False
+    # For the left tiles, pushing from left is invalid; for the right tiles, pushing from right is invalid
     if (index % dimension == 0 and push_from == 'L') or (index % dimension == dimension - 1 and push_from == 'R'):
         return False
+    # For the top tiles, pushing from top is invalid; for the bottom tiles, pushing from bottom is invalid
     if (index < dimension and push_from == 'T') or (index >= dimension * (dimension - 1) and push_from == 'B'):
         return False
+    # If the tiles are in the middle (not sides/corners), it is definitely invalid
     if (index % dimension != 0 and index % dimension != dimension - 1 and index >= dimension and index < dimension * (dimension - 1)):
         return False
+    # The rest of the cases unstated above are valid
     return True
 
 def apply_move(board, turn, index, push_from):
     dimension = int(math.sqrt(len(board)))
     board_temp = board[:]
-    # move top
+    # Move from top
     if push_from == 'T':
         for i in range(index, index % dimension, -dimension): 
             board_temp[i] = board_temp[i - dimension] 
         board_temp[index%dimension] = turn 
-    # move bottom
+    # Move from bottom
     elif push_from == 'B':
         for i in range(index, dimension * (dimension - 1) + index % dimension, dimension): 
             board_temp[i] = board_temp[i + dimension] 
         board_temp[index % dimension + dimension * (dimension - 1)] = turn  
-    # move right
+    # Move from right
     elif push_from == 'R':
         for i in range(index, (index // dimension + 1) * dimension - 1): 
             board_temp[i] = board_temp[i + 1]  
         board_temp[(index // dimension+1) * dimension - 1] = turn
-    # move left
+    # Move from left
     elif push_from == 'L':
         for i in range(index, index // dimension * dimension, -1): 
             board_temp[i] = board_temp[i-1]  
         board_temp[index // dimension * dimension] = turn        
     return board_temp[:]
 
-def check_victory(board, who_played):
+def check_victory(board, who_played): #NEED TO FIX
     dimension = int(math.sqrt(len(board)))
     winner = 0  
     # checking row
@@ -78,8 +83,7 @@ def check_victory(board, who_played):
     else:
         return winner
 
-
-def computer_move(board, turn, level):
+def computer_move(board, turn, level): #NEED TO FIX
     dimension = int(math.sqrt(len(board)))
     list = all_valid_moves(board, turn)
     if level == 1:
@@ -106,66 +110,46 @@ def computer_move(board, turn, level):
         else:
             x = random.randint(0, len(bad_moves) - 1)
             return neutral_moves[x][0], neutral_moves[x][1]
-    if turn == 2:
-        max = False
-        best_move = [101, 0, 0]
-    else:
-        max = True
-        best_move = [-101, 0, 0]
+    score = 101
+    best_move = [101, 0, 0]
     for i in range(len(list)):
-        score = 101
         simulationboard = apply_move(board, turn, list[i][0], list[i][1])
         if level == 3:
-            score = minimax(simulationboard, turn % 2 + 1, 2, max)
+            score = minimax(simulationboard, turn, 2, True)
             #print(score)
         else:
-            if len(all_valid_moves(board, turn)) > 20:
-                score = minimax(simulationboard, turn % 2 + 1, 2, max)
-            else:
-                score = minimax(simulationboard, turn % 2 + 1, 4, max)
+            score = minimax(simulationboard, turn, 2, True)
+            #print(f"move: {list[i][0]}{list[i][1]}, score = {score}")
         #print(f"0: {best_move[0]}, 1: {best_move[1]}, 2: {best_move[2]}, 3: {list[i][0]}{list[i][1]}, i={i}, score={score}")
-        if max == False:
-            if best_move[0] > score:
-                best_move[0] = score
-                best_move[1] = list[i][0]
-                best_move[2] = list[i][1]
-        elif max == True:
-            if best_move[0] < score:
-                best_move[0] = score
-                best_move[1] = list[i][0]
-                best_move[2] = list[i][1]
-        if best_move[0] == score:
-            if random.randint(0, 1) == 0:
-                best_move[0] = score
-                best_move[1] = list[i][0]
-                best_move[2] = list[i][1]
+        if best_move[0] > score:
+            best_move[0] = score
+            best_move[1] = list[i][0]
+            best_move[2] = list[i][1]
         #print(f"0: {best_move[0]}, 1: {best_move[1]}, 2: {best_move[2]}, 3: {list[i][0]}{list[i][1]}, i={i}")
     return best_move[1], best_move[2]
 
-
-def xo(input):
-    if input == 1:
-        return 'X'
-    if input == 2:
-        return 'O'
-    return '_'
-
-
 def display_board(board):
     dimension = int(math.sqrt(len(board)))
+    # Displays column number
     print("  ", end="")
     for i in range(dimension):
         print("  ", i + 1, end="")
     print("\n")
     for i in range(dimension):
-        print(f"{i + 1}    ", end="")
+        # Displays left side row number
+        print(i + 1, "    ", end="")
+        # Displays 'X' for player 1, 'O' for player 2, '_' otherwise
         for j in range(dimension):
-            print(xo(board[i * dimension + j]), end="   ")
+            if board[i * dimension + j] == 1:
+                print("X", end="   ")
+            elif board[i * dimension + j] == 2:
+                print("O", end="   ")
+            else:
+                print("_", end="   ")
         print("\n")
     print("")
 
-
-def menu():
+def menu(): #NEED TO FIX
     # prompt the user for game modes (two human players or vs computer level 1-4)
     print("Welcome to Quixo")
     print("Type the number below to choose game modes: ")
@@ -369,18 +353,19 @@ def minimax(board, turn, depth, maximizing):
         return positional_value(board, turn)
     valid_moves = all_valid_moves(board, turn)
     no_of_options = len(valid_moves)
+    turn = turn % 2 + 1
     if maximizing == True:
         score = -11
         for i in range(len(valid_moves)):
             board_simul = apply_move(board, turn, valid_moves[i][0], valid_moves[i][1])
-            score_predict = minimax(board_simul, (turn % 2) + 1, depth - 1, False)
+            score_predict = minimax(board_simul, turn, depth - 1, False)
             if score_predict > score:
                 score = score_predict
     else:
         score = 11
         for i in range(len(valid_moves)):
             board_simul = apply_move(board, turn, valid_moves[i][0], valid_moves[i][1])
-            score_predict = minimax(board_simul, (turn % 2) + 1, depth - 1, True)
+            score_predict = minimax(board_simul, turn, depth - 1, True)
             if score_predict < score:
                 score = score_predict
     return score
