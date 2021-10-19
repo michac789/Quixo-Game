@@ -1,7 +1,6 @@
 import random
 import math
 import sys
-import time
 
 def check_move(board, turn, index, push_from):
     dimension = int(math.sqrt(len(board)))
@@ -47,7 +46,7 @@ def apply_move(board, turn, index, push_from):
 
 def check_victory(board, who_played): #NEED TO FIX
     dimension = int(math.sqrt(len(board)))
-    winner = 0  
+    winner = 0
     # checking row
     for row in range(dimension):
         victory = True
@@ -150,37 +149,35 @@ def display_board(board):
     print("")
 
 def menu(): #NEED TO FIX
-    # prompt the user for game modes (two human players or vs computer level 1-4)
+    # Prompt the user for game modes (two human players or vs computer level 1-4)
     print("Welcome to Quixo")
     print("Type the number below to choose game modes: ")
     print("0: two players (human vs human)")
     for i in range(4):
-        print(f"{i + 1}: single player against computer Level {i + 1}")
+        print(f"{i + 1}: single player against computer Level {i + 1}") #BEWARE
     while(True):
         level = input("Enter your choice: ")
         if checkint(level) == True:
-            if 0 <= int(level) < 6:
+            if 0 <= int(level) < 5:
                 break
         print("Invalid input! You can only type the integer 0, 1, 2, 3, or 4!")
-
-    # prompt the user for the size of the board
+    # Prompt the user for the size of the board
     while(True):
         n = input("Choose dimension: ")
         if checkint(n) == True:
-            if 1 < int(n) < 100:
+            if 1 < int(n) < 10:
                 break
-        print("Invalid input! Please input only an integer between 2 and 99 inclusive!")
-
+        print("Invalid input! Please input only an integer between 2 and 10 inclusive!")
     # 2 players (human vs human)
-    temp = -1
+    turn = 0
     board = [0 for i in range(int(n)*int(n))]
     display_board(board)
     if int(level) == 0:
         while(True):
-            temp = temp + 1
-            turn = (temp % 2) + 1
+            turn = turn % 2 + 1
+            # Ensure that the user give a valid move
             while(True):
-                print(f"It is player {turn} turn.")
+                print(f"It is player {turn} turn.") #BEWARE
                 while(True):
                     row = input("Enter row: ")
                     if checkint(row) == True:
@@ -206,41 +203,15 @@ def menu(): #NEED TO FIX
                 if check_move(board, turn, input_index, input_push_from) == True:
                     break
                 print("Invalid move!")
-
+            # IF WIN
             board = apply_move(board, turn, input_index, input_push_from)
             display_board(board)
-            if check_victory != 0: #BUGGY
+            if check_victory(board, turn) != 0: #BUGGY
                 print(f"Congratulations! Player {check_victory(board, turn)} wins!")
                 sys.exit(0)
-    elif int(level) == 5:
-        while(True):
-            temp = temp + 1
-            turn = (temp % 2) + 1
-            print(f"Turn: {turn}, comp lv3")
-            compindex, comppush = computer_move(board, turn, 3)
-            print(f"Move: row {compindex // int(n) + 1}, column {(compindex % int(n)) + 1}, push_from {comppush}")
-            board = apply_move(board, turn, compindex, comppush)
-            display_board(board)
-            if check_victory(board, turn) != 0:
-                print(f"Computer 3 win!")
-                sys.exit(0)
-            
-            temp += 1
-            turn = (turn % 2) + 1
-            print(f"Turn: {turn}, comp lv4")
-            compindex, comppush = computer_move(board, turn, 4)
-            print(f"Move: row {compindex // int(n) + 1}, column {(compindex % int(n)) + 1}, push_from {comppush}")
-            board = apply_move(board, turn, compindex, comppush)
-            display_board(board)
-            if check_victory(board, turn) != 0:
-                print(f"Computer 4 win!")
-                sys.exit(0)
-            
-
     else:
         while(True):
-            temp = temp + 1
-            turn = (temp % 2) + 1
+            turn = turn % 2 + 1
             while(True):
                 print(f"It is player {turn} turn.")
                 while(True):
@@ -276,11 +247,9 @@ def menu(): #NEED TO FIX
             
             if int(level) == 1:
                 print("Computer level 1 is thinking...")
-                temp = temp + 1
                 compindex, comppush = computer_move(board, turn % 2 + 1, 1)
             else:
                 print(f"Computer level {level} is thinking...")
-                temp = temp + 1
                 compindex, comppush = computer_move(board, turn % 2 + 1, int(level))
             print(f"Move: row {compindex // int(n) + 1}, column {(compindex % int(n)) + 1}, push_from {comppush}")
             board = apply_move(board, turn % 2 + 1, compindex, comppush)
@@ -289,14 +258,14 @@ def menu(): #NEED TO FIX
                 print(f"The computer wins! Try again!")
                 sys.exit(0)
 
-def checkint(input):
+def checkint(input): # Returns true if input is an integer, otherwise false
     try:
         val = int(input)
         return True
     except ValueError:
         return False
 
-def all_valid_moves(board, turn):
+def all_valid_moves(board, turn): # Returns all possible valid moves from a board state
     dimension = int(math.sqrt(len(board)))
     list = []
     push_from = ['L', 'R', 'B', 'T']
@@ -315,17 +284,18 @@ def all_valid_moves(board, turn):
         del list[removeid[n] - n]
     return list
 
-def positional_value(board, turn):
+def positional_value(board, turn): # Returns score of a certain board state (positive means player 1 winning, negative means the opposite)
     dimension = int(math.sqrt(len(board)))
     score = 0
-    if check_victory(board, turn) == 1:
-        return 100
-    if check_victory(board, turn) == 2:
-        return -100
+    # For minimizing player (player 2), all points will be multiplied with (-1)
     for i in range(1, 3, 1):
         m = 1
         if i == 2:
             m = -1
+        # Score 100 if player 1 wins, -100 if player 2 wins
+        if check_victory(board, turn) == i:
+            return 100 * m
+        # For any possible winning directions, score 4 if there are (dimension - 2) pieces, score 8 if there are (dimension - 1) pieces
         for j in range(dimension):
             counter = [0 for i in range(4)]
             for k in range(dimension):
@@ -340,9 +310,10 @@ def positional_value(board, turn):
                         counter[3] += 1
             for l in range(4):
                 if counter[l] >= dimension - 2:
-                    score += (10 * m)
+                    score += (4 * m)
                 if counter[l] >= dimension - 1:
-                    score += (10 * m)
+                    score += (4 * m)
+        # For every pieces ('O' or 'X') on the board, each contribute 1 point each
         for q in range(len(board)):
             if board[q] == i:
                 score += (1 * m)

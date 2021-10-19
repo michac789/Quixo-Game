@@ -4,6 +4,21 @@
 - In early game, sometimes the computer makes a move that does not change the board outcome;
 there should also be scores assigned to each opened pieces of the board
 
+- AI Level 3 and 4 applies for which board???
+
+It is player 1 turn.
+Enter row: 1
+Enter column: 1
+Enter push direction: R
+     1   2
+
+1     _   X
+
+2     _   _
+
+
+Congratulations! Player 0 wins!
+
 Buggy AI:
 Welcome to Quixo
 Type the number below to choose game modes: 
