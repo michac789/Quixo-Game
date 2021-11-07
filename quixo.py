@@ -1,15 +1,5 @@
 import random
 import math
-import sys
-
-# Potential future Improvements:
-# 1. Generalize computer_move function for level 3 and level 4, dont assume it is always player 2
-# 2. Improve display_board function for board size 10 or greater
-# 3. Restrict computer level 3 and 4 only for board size 3x3 or above
-# 4. Allow user to decide who goes first when playing against computer
-# 5. Timed mode, go with random move instead if the user is slow
-# 6. ... (Type here to add more!)
-# Ask the use of formatted string & limit board size
 
 def check_move(board, turn, index, push_from):
     dimension = int(math.sqrt(len(board)))
@@ -80,7 +70,7 @@ def check_victory(board, who_played):
         if board[(dimension - 1) * i] == 0 or board[(dimension - 1) * i] != board [(dimension - 1) * (i + 1)]: 
             victory = False
     if victory == True and (winner == who_played or winner == 0): # refer to (1)
-        winner = board[(dimension + 1) * i]
+        winner = board[(dimension - 1) * i]
     victory = True
     # Checking left diagonal (negative gradient)
     for i in range(dimension - 1):
@@ -125,8 +115,7 @@ def computer_move(board, turn, level):
             return neutral_moves[x][0], neutral_moves[x][1]
     # Computer level 3 and 4 uses minimax algorithm (depth 2 for level 3, depth 3-4 for level 4)
     else:
-        # NOTE: WE ASSUME THE COMPUTER IS ALWAYS PLAYER 2
-        # Turn 2: maximizing = False, opponent maximizing = True
+        # Turn 2: maximizing = False, opponent maximizing = True; and turn 1 is the other way around
         k = 1
         opponent_maximizing = True
         if turn == 1:
@@ -137,14 +126,9 @@ def computer_move(board, turn, level):
         for i in range(len(list)):
             simulationboard = apply_move(board, turn, list[i][0], list[i][1])
             if level == 3:
-                score = minimax(simulationboard, turn, 1, opponent_maximizing, -1000, 1000)
+                score = minimax(simulationboard, turn, 0, opponent_maximizing, -1000, 1000)
             else: # Level 4
-                if len(list) > 30:
-                    score = minimax(simulationboard, turn, 2, opponent_maximizing, -1000, 1000)
-                else:
-                    score = minimax(simulationboard, turn, 3, opponent_maximizing, -1000, 1000)
-                #DEBUG print(f"move: {list[i][0]}{list[i][1]}, score = {score}")
-            #DEBUG print(f"0: {best_move[0]}, 1: {best_move[1]}, 2: {best_move[2]}, 3: {list[i][0]}{list[i][1]}, i={i}, score={score}")
+                score = minimax(simulationboard, turn, 2, opponent_maximizing, -1000, 1000)
             if turn == 2:
                 if best_move[0] > score:
                     best_move[0] = score
@@ -160,7 +144,6 @@ def computer_move(board, turn, level):
                     best_move[0] = score
                     best_move[1] = list[i][0]
                     best_move[2] = list[i][1]
-            #DEBUG print(f"0: {best_move[0]}, 1: {best_move[1]}, 2: {best_move[2]}, 3: {list[i][0]}{list[i][1]}, i={i}")
         return best_move[1], best_move[2]
 
 def display_board(board):
@@ -168,11 +151,17 @@ def display_board(board):
     # Displays column number
     print("  ", end="")
     for i in range(dimension):
-        print("  ", i + 1, end="")
+        if i > 9:
+            print(" ", i + 1, end="")
+        else:
+            print("  ", i + 1, end="")
     print("\n")
     for i in range(dimension):
         # Displays left side row number
-        print(i + 1, "   ", end="")
+        if i >= 9: # Adjust board to display nicely
+            print(i + 1, "  ", end="")
+        else:
+            print(i + 1, "   ", end="")
         # Displays 'X' for player 1, 'O' for player 2, '_' otherwise
         for j in range(dimension):
             if board[i * dimension + j] == 1:
@@ -187,72 +176,82 @@ def display_board(board):
 def menu():
     # Prompt the user for game modes (two human players or vs computer level 1-4)
     print("Welcome to Quixo")
-    print("Type the number below to choose game modes: ")
-    print("0: two players (human vs human)")
-    for i in range(4):
-        print(f"{i + 1}: single player against computer Level {i + 1}")
-    # Prompt game type & level with error checking
-    while(True):
-        level = input("Enter your choice: ")
-        if checkint(level) == True:
-            if 0 <= int(level) < 5:
-                break
-        print("Invalid input! You can only type the integer 0, 1, 2, 3, or 4!")
-    # Prompt the user for the size of the board (acceptable input: 2-10)
-    while(True):
-        n = input("Choose dimension: ")
-        if checkint(n) == True:
-            if 1 < int(n) <= 10:
-                break
-        print("Invalid input! Please input only an integer between 2 and 10 inclusive!")
-    # 2 players (human vs human)
-    turn = 2
-    board = [0 for i in range(int(n)*int(n))]
-    # for 2 player (human vs human)
-    if int(level) == 0:
-        display_board(board)
+    while(True): 
+        print("Type the number below to choose game modes: ")
+        print("0: two players (human vs human)")
+        for i in range(4):
+            print(f"{i + 1}: single player against computer Level {i + 1}")
+        # Prompt game type & level with error checking
         while(True):
-            turn = turn % 2 + 1
-            input_index, input_push_from = prompt_valid_move(board, turn, int(n))
-            board = apply_move(board, turn, input_index, input_push_from)
-            display_board(board)
-            if check_victory(board, turn) != 0: #BUGGY
-                print(f"Congratulations! Player {check_victory(board, turn)} wins!")
-                sys.exit(0)
-    # Single player (vs computer level 1/2/3/4)
-    else:
-        # Ask the human player to be the first or second player
-        while(True):
-            humanturn = input("Do you want to be the first or second player? Please enter integer 1 or 2! ")
-            if checkint(humanturn) == True:
-                if 0 < int(humanturn) < 3:
+            level = input("Enter your choice: ")
+            if checkint(level) == True:
+                if 0 <= int(level) < 5:
                     break
-            print("Invalid input! Please enter integer 1 or 2 only!")
-        skipfirstmove = False
-        if int(humanturn) == 2:
-            skipfirstmove = True
-        display_board(board)
+            print("Invalid input! You can only type the integer 0, 1, 2, 3, or 4!")
+        # Prompt the user for the size of the board (acceptable input: 2-20)
         while(True):
-            if skipfirstmove == False:
+            n = input("Choose dimension: ")
+            if checkint(n) == True:
+                if 1 < int(n) <= 20:
+                    break
+            print("Invalid input! Please input only an integer between 2 and 20 inclusive!")
+        # 2 players (human vs human)
+        turn = 2
+        board = [0 for i in range(int(n)*int(n))]
+        # for 2 player (human vs human)
+        if int(level) == 0:
+            display_board(board)
+            while(True):
                 turn = turn % 2 + 1
                 input_index, input_push_from = prompt_valid_move(board, turn, int(n))
                 board = apply_move(board, turn, input_index, input_push_from)
                 display_board(board)
+                if check_victory(board, turn) != 0: 
+                    print(f"Congratulations! Player {check_victory(board, turn)} wins!")
+                    break
+        # Single player (vs computer level 1/2/3/4)
+        else:
+            # Ask the human player to be the first or second player
+            while(True):
+                humanturn = input("Do you want to be the first or second player? Please enter integer 1 or 2! ")
+                if checkint(humanturn) == True:
+                    if 0 < int(humanturn) < 3:
+                        break
+                print("Invalid input! Please enter integer 1 or 2 only!")
+            skipfirstmove = False
+            if int(humanturn) == 2:
+                skipfirstmove = True
+            display_board(board)
+            while(True):
+                if skipfirstmove == False:
+                    turn = turn % 2 + 1
+                    input_index, input_push_from = prompt_valid_move(board, turn, int(n))
+                    board = apply_move(board, turn, input_index, input_push_from)
+                    display_board(board)
+                    if check_victory(board, turn) != 0:
+                        break
+                turn = turn % 2 + 1
+                print(f"Computer level {level} is thinking...")
+                compindex, comppush = computer_move(board, turn, int(level))
+                print(f"Computer move: row {compindex // int(n) + 1}, column {(compindex % int(n)) + 1}, push_from {comppush}")
+                board = apply_move(board, turn, compindex, comppush)
+                display_board(board)
+                skipfirstmove = False
                 if check_victory(board, turn) != 0:
                     break
-            turn = turn % 2 + 1
-            print(f"Computer level {level} is thinking...")
-            compindex, comppush = computer_move(board, turn, int(level))
-            print(f"Computer move: row {compindex // int(n) + 1}, column {(compindex % int(n)) + 1}, push_from {comppush}")
-            board = apply_move(board, turn, compindex, comppush)
-            display_board(board)
-            skipfirstmove = False
-            if check_victory(board, turn) != 0:
-                break
-        if check_victory(board, turn) == humanturn:
-            print(f"Congratulations! You win against computer level {level}!")
-        else:
-            print(f"Sorry, you lose against computer level {level}! Try again and good luck next time!")
+            if check_victory(board, turn) == int(humanturn): 
+                print(f"Congratulations! You win against computer level {level}!")
+            else:
+                print(f"Sorry, you lose against computer level {level}! Try again and good luck next time!")
+        
+        while(True):
+            cont = input ('Wanna play again? Y/N ')  
+            if cont == 'Y' or cont == 'y':
+                break 
+            elif cont == 'N' or cont == 'n':  
+                print('Thank you and see you again.\n')
+                return
+            print('Invalid input! Input only Y/N ')
 
 def prompt_valid_move(board, turn, dimension): # Keep reprompting the user until the move input is valid
     while(True):
@@ -283,7 +282,7 @@ def prompt_valid_move(board, turn, dimension): # Keep reprompting the user until
         if check_move(board, turn, input_index, input_push_from) == True:
             break
         print("Invalid move! Please enter a valid index and push direction!")
-    return input_index, input_push_from
+    return input_index, input_push_from 
 
 def checkint(input): # Returns true if input is an integer, otherwise false
     try:
