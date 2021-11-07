@@ -66,7 +66,6 @@ def check_victory(board, who_played):
         # Yet, if it is still zero (no winner) and the player wins, we can replace it with the value that representing opposite player wins if it exists
         if victory == True and (winner == who_played or winner == 0):
             winner = board[row * dimension + j]
-    print(f"row > winner = {winner}")
     # Checking column
     for column in range(dimension):
         victory = True
@@ -75,24 +74,22 @@ def check_victory(board, who_played):
                 victory = False
         if victory == True and (winner == who_played or winner == 0): # refer to (1)
             winner = board[column + i * dimension]
-    print(f"column > winner = {winner}")
-    # Checking right diagonal
+    # Checking right diagonal (positive gradient)
     victory = True  
     for i in range (1, dimension): 
-        if board[(dimension - 1) * i] == 0 or board[(dimension - 1)*i] != board [(dimension - 1) * (i + 1)]: 
+        if board[(dimension - 1) * i] == 0 or board[(dimension - 1) * i] != board [(dimension - 1) * (i + 1)]: 
             victory = False
-        if victory == True and (winner == who_played or winner == 0): # refer to (1)
-            winner = board[(dimension + 1) * i]
-    print(f"right diagonal > winner = {winner}")
-    # Checking left diagonal
-    for i in range (dimension - 1): 
-        if board[(dimension + 1) * i] == 0 or board[(dimension + 1) * i] != board[(dimension + 1) * (i + 1)]: 
-            victory = False  
-        if victory == True and (winner == who_played or winner == 0): # refer to (1)
-            winner = board[(dimension + 1) * i]
-    print(f"left diagonal > winner = {winner}")
+    if victory == True and (winner == who_played or winner == 0): # refer to (1)
+        winner = board[(dimension + 1) * i]
+    victory = True
+    # Checking left diagonal (negative gradient)
+    for i in range(dimension - 1):
+        if board [(dimension + 1) * i] == 0 or board[(dimension + 1) * i] != board [(dimension + 1) * (i + 1)]:
+            victory = False
+    if victory == True and (winner == who_played or winner == 0):
+        winner = board[(dimension + 1) * i]
     # Return winner if there is one
-    return winner
+    return winner 
 
 def computer_move(board, turn, level):
     dimension = int(math.sqrt(len(board)))
