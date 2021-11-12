@@ -12,7 +12,7 @@ def check_move(board, turn, index, push_from):
     # For the top tiles, pushing from top is invalid; for the bottom tiles, pushing from bottom is invalid
     if (index < dimension and push_from == 'T') or (index >= dimension * (dimension - 1) and push_from == 'B'):
         return False
-    # If the tiles are in the middle (not sides/corners), it is definitely invalid
+    # If the tiles are in the middle (not sides/corners), then it is definitely invalid
     if (index % dimension != 0 and index % dimension != dimension - 1 and index >= dimension and index < dimension * (dimension - 1)):
         return False
     # The rest of the cases unstated above are valid
