@@ -94,15 +94,25 @@ def computer_move(board, turn, level):
         good_moves = []
         neutral_moves = []
         bad_moves = []
+        very_bad_moves = []
         # Classify all valid moves into good/neutral/bad moves based on instruction
         for moves in list:
             board_temp = apply_move(board, turn, moves[0], moves[1])
             if check_victory(board_temp, turn) == turn:
                 good_moves.append((moves[0], moves[1]))
             elif check_victory(board_temp, turn) == turn % 2 + 1:
-                bad_moves.append((moves[0], moves[1]))
-            else:
-                neutral_moves.append((moves[0], moves[1]))
+                very_bad_moves.append((moves[0], moves[1]))
+            else: #TO DO: classify neutral bad
+                opp_possible_moves = all_valid_moves(board_temp, turn % 2 + 1)
+                status = True
+                for opp_moves in opp_possible_moves:
+                    board_temp2 = apply_move(board_temp, turn % 2 + 1, opp_moves[0], opp_moves[1])
+                    if check_victory(board_temp2, turn % 2 + 1) == turn % 2 + 1:
+                        status = False
+                        bad_moves.append((moves[0], moves[1]))
+                        break
+                if status == True:
+                    neutral_moves.append((moves[0], moves[1]))
         # Randomize, index [x][0] or [x][1] simply means the 'x' good/neutral/bad moves, [0]: push_index, [1]: push_from
         if len(good_moves) > 0:
             x = random.randint(0, len(good_moves) - 1)
@@ -110,9 +120,12 @@ def computer_move(board, turn, level):
         elif len(neutral_moves) > 0:
             x = random.randint(0, len(neutral_moves) - 1)
             return neutral_moves[x][0], neutral_moves[x][1]
-        else:
+        elif len(bad_moves) > 0:
             x = random.randint(0, len(bad_moves) - 1)
-            return neutral_moves[x][0], neutral_moves[x][1]
+            return bad_moves[x][0], bad_moves[x][1]
+        else:
+            x = random.randint(0, len(very_bad_moves) - 1)
+            return very_bad_moves[x][0], very_bad_moves[x][1]
     # Computer level 3 and 4 uses minimax algorithm (depth 2 for level 3, depth 3-4 for level 4)
     else:
         # Turn 2: maximizing = False, opponent maximizing = True; and turn 1 is the other way around

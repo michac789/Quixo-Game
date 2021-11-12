@@ -56,7 +56,7 @@ def check_victory(board, who_played):
         victory = True 
         for j in range (n-1) : 
             if board[row*n+j] == 0 or board[row*n + j] != board[row*n+j+1] :
-                victory = False  
+                victory = False
         if victory == True and (winner == who_played or winner == 0):
             winner = board[row*n+j]  
     # checking column 

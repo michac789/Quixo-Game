@@ -4,6 +4,15 @@
 - In early game, sometimes the computer makes a move that does not change the board outcome;
 there should also be scores assigned to each opened pieces of the board
 
+     1   2   3
+
+1    O   O   X
+
+2    _   X   _
+
+3    _   X   _
+
+
 - AI Level 3 and 4 applies for which board???
 
 It is player 1 turn.

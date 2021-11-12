@@ -58,7 +58,6 @@ def test():
     print()
     
     board = [1,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0,  0,0,0,0,0]
-    print(check_victory(board, 1))
     if check_victory(board, 1)==0: print("test check_victory 1 - OK !")
     else: print("test check_victory 1 - Problem in the check_victory function output !")
     
@@ -94,7 +93,6 @@ def test():
     else: print("test computer_move 2 - Problem in the computer_move function output !")
     
     board = [1,1,1,1,0,  2,0,0,0,2,  0,0,0,0,2,  2,0,0,0,2,  0,0,0,0,2]
-    display_board(board)
     if computer_move(board, 1, 2) in [(4,'L')]: print("test computer_move 2 - OK !")
     else: print("test computer_move 2 - Problem in the computer_move function output !")
   
