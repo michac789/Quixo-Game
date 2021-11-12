@@ -283,19 +283,14 @@ def prompt_valid_move(board, turn, dimension): # Keep reprompting the user until
             print(f"Please enter a valid column number between 1 until {dimension} inclusive!")
         while(True):
             input_push_from = input("Enter push direction: ")
-            allowed = ['L', 'R', 'B', 'T']
-            valid = False
-            for i in range(4):
-                if input_push_from == allowed[i]:
-                    valid = True
-            if valid == True:
+            if input_push_from.upper() in ['L', 'R', 'B', 'T']:
                 break
             print("Please enter a valid push direction! 'L': left, 'R': right, 'B': bottom, 'T': top")
         input_index = (int(row) - 1) * dimension + int(column) - 1
         if check_move(board, turn, input_index, input_push_from) == True:
             break
         print("Invalid move! Please enter a valid index and push direction!")
-    return input_index, input_push_from 
+    return input_index, input_push_from.upper()
 
 def checkint(input): # Returns true if input is an integer, otherwise false
     try:
